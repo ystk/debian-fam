@@ -1,0 +1,43 @@
+diff -Naur fam-2.7.0/fam-2.7.0/src/NetConnection.c++ fam-2.7.0-mod/fam-2.7.0/src/NetConnection.c++
+--- fam-2.7.0/fam-2.7.0/src/NetConnection.c++	2003-01-18 09:18:12.000000000 -0500
++++ fam-2.7.0-mod/fam-2.7.0/src/NetConnection.c++	2007-07-30 12:57:19.812380334 -0400
+@@ -213,6 +213,7 @@
+ 
+     msgList_t * msg = new msgList_t;
+     msg->next = NULL;
++    msg->offset = 0;
+     Length len = vsnprintf(
+         msg->msg + 4, MAXMSGSIZE + 1, format, args) + 1;
+     va_end(args);
+@@ -241,7 +242,8 @@
+ {
+     while (omsgList) 
+     {
+-	int ret = send(fd, omsgList->msg, omsgList->len, 0);
++	int ret = send(fd, omsgList->msg + omsgList->offset,
++                       omsgList->len - omsgList->offset, 0);
+         if (ret < 0 && errno == EWOULDBLOCK) 
+         {
+             break;
+@@ -249,7 +251,9 @@
+         {
+             if (ret >= 0) 
+             {
+-                assert(ret == omsgList->len);
++                omsgList->offset += ret;
++                if( omsgList->offset < omsgList->len )
++                    continue;
+             } else 
+             {
+                 /* Since the client library can close it's fd before
+diff -Naur fam-2.7.0/fam-2.7.0/src/NetConnection.h fam-2.7.0-mod/fam-2.7.0/src/NetConnection.h
+--- fam-2.7.0/fam-2.7.0/src/NetConnection.h	2003-01-18 09:18:12.000000000 -0500
++++ fam-2.7.0-mod/fam-2.7.0/src/NetConnection.h	2007-07-30 12:53:46.746803625 -0400
+@@ -80,6 +80,7 @@
+     typedef struct msgList_s {
+         char msg[MAXMSGSIZE+5];  //  + 4 for 32-bit length, + 1 for overflow
+         int len;
++        int offset;
+         msgList_s * next;
+     } msgList_t;
+     

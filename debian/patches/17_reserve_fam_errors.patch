@@ -1,0 +1,18 @@
+--- fam-2.7.0/lib/fam.c++	2003-01-18 15:18:12.000000000 +0100
++++ fam-2.7.0/lib/fam.c++	2007-08-16 14:17:30.000000000 +0200
+@@ -46,7 +46,14 @@
+ #define LOCALHOSTNUMBER 0x7f000001 // Internet number for loopback.
+ 
+ // Error variables - XXX currently not dealt with
+-#define FAM_NUM_ERRORS 1
++// Debian specific change: Make the public symbol size 100 instead of 1 to
++// avoid errors when using binaries built against another version of the
++// library: if the size changes (for example when error messages are added
++// or when switching from the fam to the gamin implementation), the linker
++// warns that the FamErrlist sizes don't match, even if this isn't problematic
++// (as FAMErrno is set by the lib at runtime based on the messages it knows
++// about)
++#define FAM_NUM_ERRORS 100
+ int FAMErrno;
+ char *FamErrlist[FAM_NUM_ERRORS];
+ 

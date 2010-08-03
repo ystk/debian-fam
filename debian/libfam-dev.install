@@ -1,0 +1,4 @@
+usr/lib/libfam.a
+usr/lib/libfam.la
+usr/include/fam.h
+usr/share/man/man3/fam.3

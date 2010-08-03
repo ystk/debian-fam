@@ -1,0 +1,12 @@
+diff -r 70fca8077d17 src/NFSFileSystem.c++
+--- a/src/NFSFileSystem.c++	Sun Aug 01 22:11:06 2010 -0700
++++ b/src/NFSFileSystem.c++	Sun Aug 01 22:12:31 2010 -0700
+@@ -97,7 +97,7 @@
+ 
+     attr_cache_timeout = ACREGMAX;
+ 
+-    char * p;
++    const char * p;
+         
+     if (strstr(opt, "noac")) {
+         f_noac = true;

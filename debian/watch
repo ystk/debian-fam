@@ -1,0 +1,2 @@
+version=3
+opts=pasv ftp://oss.sgi.com/projects/fam/download/stable/fam-([0-9.]+)\.tar\.gz

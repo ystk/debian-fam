@@ -1,0 +1,121 @@
+diff -Naur fam-2.7.0/fam-2.7.0/man/famd.8 fam-2.7.0-mod/fam-2.7.0/man/famd.8
+--- fam-2.7.0/fam-2.7.0/man/famd.8	2003-01-19 19:58:11.000000000 -0500
++++ fam-2.7.0-mod/fam-2.7.0/man/famd.8	2007-07-30 12:23:15.292527117 -0400
+@@ -51,6 +51,9 @@
+ Register with the portmapper using the specifed RPC program
+ and version numbers.
+ .TP
++\fB\-P\fR \fIport\fR
++Bind to the specified TCP port instead of choosing at random.
++.TP
+ \fB\-t\fR \fIperiod\fR
+ Poll a remove NFS server every \fIperiod\fR seconds
+ to obtain file updates if the remove server is not running \fBfamd\fR.
+diff -Naur fam-2.7.0/fam-2.7.0/src/Listener.c++ fam-2.7.0-mod/fam-2.7.0/src/Listener.c++
+--- fam-2.7.0/fam-2.7.0/src/Listener.c++	2003-01-19 19:37:29.000000000 -0500
++++ fam-2.7.0-mod/fam-2.7.0/src/Listener.c++	2007-07-26 16:32:03.863758810 -0400
+@@ -60,13 +60,14 @@
+ 
+ static void cleanup_negotiation(void *closure);
+ 
+-Listener::Listener(bool sbi, bool lo, unsigned long p, unsigned long v)
++Listener::Listener(bool sbi, bool lo, unsigned long p, unsigned long v, int pt)
+ : program(p),
+   version(v),
+   rendezvous_fd(-1),
+   started_by_inetd(sbi),
+   _ugly_sock(-1),
+-  local_only(lo)
++  local_only(lo),
++  port(pt)
+ {
+     if (started_by_inetd)
+     {
+@@ -91,11 +92,19 @@
+ 	memset(&addr, 0, sizeof addr);
+ 	addr.sin_family = AF_INET;
+         addr.sin_addr.s_addr = local_only ? htonl(INADDR_LOOPBACK) : 0;
+-	addr.sin_port = htons(0);
+-	if (bindresvport(sock, &addr) < 0)
+-	{
+-	    Log::perror("can't bind to reserved port");
+-	    exit(1);
++	addr.sin_port = htons(port);
++	Log::info( "Binding to port: %d\n", addr.sin_port );
++	if (port == 0)
++	{   if (bindresvport(sock, &addr) < 0)
++	    {   Log::perror("can't bind to reserved port");
++	        exit(1);
++	    }
++	}
++	else
++	{   if (bind(sock, (const sockaddr*)&addr, sizeof(sockaddr_in) ) < 0)
++	    {   Log::perror("can't bind to specified port");
++	        exit(1);
++	    }
+ 	}
+ 	if (listen(sock, 1) < 0)
+ 	{
+diff -Naur fam-2.7.0/fam-2.7.0/src/Listener.h fam-2.7.0-mod/fam-2.7.0/src/Listener.h
+--- fam-2.7.0/fam-2.7.0/src/Listener.h	2003-01-18 09:18:12.000000000 -0500
++++ fam-2.7.0-mod/fam-2.7.0/src/Listener.h	2007-07-26 16:32:50.682255289 -0400
+@@ -51,7 +51,9 @@
+ 
+     Listener(bool started_by_inetd,
+              bool local_only,
+-	     unsigned long program = FAMPROG, unsigned long version = FAMVERS);
++             unsigned long program = FAMPROG,
++             unsigned long version = FAMVERS,
++             int pt = 0);
+     ~Listener();
+ 
+     static void create_local_client(TCP_Client &inet_client, uid_t uid);
+@@ -66,6 +68,7 @@
+     bool started_by_inetd;
+     int _ugly_sock;
+     bool local_only;
++    int port;
+ 
+     //  Private Instance Methods
+ 
+diff -Naur fam-2.7.0/fam-2.7.0/src/main.c++ fam-2.7.0-mod/fam-2.7.0/src/main.c++
+--- fam-2.7.0/fam-2.7.0/src/main.c++	2003-01-19 01:15:51.000000000 -0500
++++ fam-2.7.0-mod/fam-2.7.0/src/main.c++	2007-05-08 16:42:35.618954322 -0400
+@@ -89,6 +89,7 @@
+     fprintf(stderr, "\t-d\t\tdebug\n");
+     fprintf(stderr, "\t-v\t\tverbose\n");
+     fprintf(stderr, "\t-l\t\tno polling\n");
++    fprintf(stderr, "\t-P\t\tbind to specified port\n");
+     fprintf(stderr, "\t-t seconds\tset polling interval (default 6 s)\n");
+     fprintf(stderr, "\t-T seconds\tset inactive timeout (default 5 s)\n");
+     fprintf(stderr, "\t-p prog.vers\tset RPC program number and version\n");
+@@ -122,6 +123,7 @@
+     bool started_by_inetd = S_ISSOCK(st.st_mode);
+ 
+     unsigned long program = Listener::FAMPROG, version = Listener::FAMVERS;
++    int port = 0;
+ 
+     program_name = basename2(argv[0]);
+     Log::name(program_name);
+@@ -196,6 +198,12 @@
+             if (argv[i] == q) usage();
+ 	    break;
+ 
++        case 'P':
++            if (++i >= argc)
++                usage();
++            port = strtol(argv[i], NULL, 10);
++            break;
++
+ 	case 't':
+ 	    if (i + 1 >= argc)
+ 		usage();
+@@ -286,7 +294,7 @@
+     // (since we poll anyway) and we don't want to create zombies.
+     (void) signal(SIGCHLD, SIG_IGN);
+ #endif
+-    new Listener(started_by_inetd, opts.local_only, program, version);
++    new Listener(started_by_inetd, opts.local_only, program, version, port);
+     Scheduler::loop();
+     return 0;
+ }

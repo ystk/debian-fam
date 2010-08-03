@@ -1,0 +1,24 @@
+#!/usr/bin/make -f
+
+DEB_TAR_SRCDIR := fam-2.7.0
+DEB_DH_INSTALL_SOURCEDIR := debian/tmp
+
+include /usr/share/cdbs/1/rules/tarball.mk
+include /usr/share/cdbs/1/rules/debhelper.mk
+include /usr/share/cdbs/1/rules/simple-patchsys.mk
+include /usr/share/cdbs/1/class/autotools.mk
+
+DEB_AUTO_UPDATE_LIBTOOL := pre
+DEB_AUTO_UPDATE_ACLOCAL := 1.10
+DEB_AUTO_UPDATE_AUTOMAKE := 1.10
+DEB_AUTO_UPDATE_AUTOCONF := 2.50
+DEB_UPDATE_RCD_PARAMS := "defaults 21"
+
+DEB_CONFIGURE_USER_FLAGS := --with-pic=yes
+CXXFLAGS = -g -Wall -O2 -Wno-sign-compare -Wno-deprecated \
+	-D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE
+
+install/fam ::
+	cp build-tree/fam-2.7.0/man/famd.conf.5 \
+	  debian/tmp/usr/share/man/man5/fam.conf.5
+	cp debian/fam.conf debian/tmp/etc/fam.conf

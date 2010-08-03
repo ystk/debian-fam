@@ -1,0 +1,527 @@
+fam (2.7.0-17) unstable; urgency=low
+
+  * Increase the number of declared error message slots (FAM_NUM_ERRORS)
+    using patch by Loïc Minier (closes: #438345)
+  * Use a variable of type (const char *) to receive the return value of
+    strstr to avoid build failure with gcc 4.4 due to the "Strict
+    null-terminated sequence utilities" feature
+  * Bump to Standards-Version 3.9.0.0 (no change necessary)
+  * Add debian/source/format (1.0)
+
+ -- Chuan-kai Lin <cklin@debian.org>  Mon, 02 Aug 2010 21:25:43 -0700
+
+fam (2.7.0-16) unstable; urgency=low
+
+  * Update to Standards-Version 3.8.3.0
+  * Define DEB_AUTO_UPDATE_ACLOCAL in debian/rules to fix FTBFS with cdbs
+    0.4.61 (Closes: #544653)
+
+ -- Chuan-kai Lin <cklin@debian.org>  Sat, 05 Sep 2009 12:48:21 -0700
+
+fam (2.7.0-15) unstable; urgency=low
+
+  * Suppress status_of_proc failure message at start
+    (Closes: #537545, #539200)
+  * Make libfam0 Suggests instead of Recommends fam (Closes: #400836)
+
+ -- Chuan-kai Lin <cklin@debian.org>  Mon, 03 Aug 2009 10:33:04 -0700
+
+fam (2.7.0-14) unstable; urgency=low
+
+  * Update to Standards-Version 3.8.2.0
+  * Upgrade build dependency to automake-1.10
+  * Upgrade to debhelper compatibility level 7
+  * Declare ${misc:Depends} for debhelper
+  * Update copyright file with copyright notice and applicable GPL and
+    LGPL version numbers
+  * Set -e flag in preinst
+  * Apply patch from Glenn Wurster to eliminate partial socket send
+    assertion error (Closes: #435274)
+  * Link famd against librt and libpthread to solve 100% CPU usage problem;
+    suggested by Wil Evers on the fam mailing list
+    (http://oss.sgi.com/projects/fam/mail_archive/200301/msg00011.html)
+    (Closes: #252896, #500387, #501081)
+  * Add init.d status support (patch from Peter Eisentraut)
+    (Closes: #527312)
+  * Fix fam.conf typo and comment-out default settings (Closes: #470071)
+  * Allow user to specify as a command-line argument which port should
+    famd bind (patch from Glenn Wurster) (Closes: #435267)
+  * Ensure init.d start does not fail when famd is already running
+    (Closes: #377039)
+
+ -- Chuan-kai Lin <cklin@debian.org>  Mon, 06 Jul 2009 15:33:15 -0700
+
+fam (2.7.0-13.4) unstable; urgency=low
+
+  * Non-maintainer upload.
+  * Fix FTBFS because of missing include.  Closes: #518888.
+
+ -- Daniel Schepler <schepler@debian.org>  Sat, 02 May 2009 09:15:40 -0700
+
+fam (2.7.0-13.3) unstable; urgency=low
+
+  * Non-maintainer upload.
+  * Fix grep call in init.d script to not fail if /etc/inetd.conf isn't
+    present (Closes: #446631, #451344, #465345).
+
+ -- Daniel Baumann <daniel@debian.org>  Sun,  8 Jun 2008 07:43:00 +0200
+
+fam (2.7.0-13.2) unstable; urgency=low
+
+  * Non-maintainer upload.
+  * Fix GCC 4.3 compatibility (Closes: #461678)
+
+ -- Moritz Muehlenhoff <jmm@debian.org>  Thu, 20 Mar 2008 23:20:14 +0100
+
+fam (2.7.0-13.1) unstable; urgency=low
+
+  * Non-maintainer uploaded to fix release goal issue.
+  * Correct LSB header of init.d script (Closes: #458474).
+  * Add depend from fam to update-inetd, as reported by lintian.
+
+ -- Petter Reinholdtsen <pere@debian.org>  Sun, 27 Jan 2008 06:29:00 +0100
+
+fam (2.7.0-13) unstable; urgency=low
+
+  * In the fam init script, redirect /dev/null to stdin when starting famd
+    to avoid faulty if-started-by-inetd heuristic in famd when running
+    through ssh remote command execution (closes: #260516, #284998)
+  * Apply patch from Giuseppe Sacco to catch a seemingly impossible
+    runtime condition (closes: #375967)
+
+ -- Chuan-kai Lin <cklin@debian.org>  Sun, 22 Jul 2007 16:53:24 -0700
+
+fam (2.7.0-12) unstable; urgency=low
+
+  * Have libfam0 replace libfam0c102 without conflicts, to provide a
+    better upgrade path for sarge->etch based on feedback.  Thanks to
+    Steve Langasek for investigating this issue (closes: #405165)
+
+ -- Chuan-kai Lin <cklin@debian.org>  Sun,  7 Jan 2007 15:24:38 -0800
+
+fam (2.7.0-11) unstable; urgency=low
+
+  * Force pasv in watch file to avoid empty FTP indices
+  * Include memory-leak patch by David Price (closes: #381423)
+  * Use LSB init-functions from lsb-base (closes: #378116, #384860)
+  * Update to Standards-Version 3.7.2.0
+  * Relax the dependency of dummy package libfam0c102 to
+    >= ${Source-Version} instead of requiring strict equality
+
+ -- Chuan-kai Lin <cklin@debian.org>  Wed,  4 Oct 2006 15:29:13 -0700
+
+fam (2.7.0-10) unstable; urgency=low
+
+  * Use g++ 4.1 compatibility fix by Martin Michlmayr (closes: #356229)
+  * Correct comments in the fam.h header file (closes: #203858)
+  * Correct inaccuracies in the fam.3 man page (closes: #301161)
+  * Fix spelling error in libfam0 README.Debian
+
+ -- Chuan-kai Lin <cklin@debian.org>  Tue,  2 May 2006 22:02:54 -0700
+
+fam (2.7.0-9) unstable; urgency=medium
+
+  * Re-introduce the libfam0c102 dummy package to ensure that systems with
+    libfam0c102 package installed only to satisfy dependency will also
+    receive updates to new fam libraries.  Full story in README.Debian in
+    the libfam0 package.  (closes: #327241, #335564, #332847)
+  * Include stdlib.h to cure a FTBFS bug (fix by Daniel Schepler).
+    (closes: #347876)
+  * Include GNU/kFreeBSD compatibility patch (fix by Robert Millan and
+    Aurelien Jarno).  (closes: #325291)
+  * Make fam Depend on portmap again because fam cannot work without the
+    portmapper, even in a local environment.  (closes: #332790, #332665)
+  * Remove start-stop-daemon call.  (closes: #339849)
+  * Add init script dependency description.  (closes: #337645)
+
+ -- Chuan-kai Lin <cklin@debian.org>  Mon, 16 Jan 2006 17:38:05 -0800
+
+fam (2.7.0-8) unstable; urgency=low
+
+  * Acknowledge NMU (closes: #317700, #317839)
+  * Make libfam0 Provides libfam0c102
+  * Make libfam0 depend on the same version of fam (closes: #185635)
+  * Fix famd.conf typo in famd man page (closes: #324837)
+  * Upgrade build dependency to automake-1.9
+
+ -- Chuan-kai Lin <cklin@debian.org>  Sun, 28 Aug 2005 20:17:15 -0700
+
+fam (2.7.0-7.2) unstable; urgency=low
+
+  * #include <limits.h> instead of "limits.h" (Closes: 317839)
+
+ -- Mike Furr <mfurr@debian.org>  Tue, 12 Jul 2005 01:21:58 +0000
+
+fam (2.7.0-7.1) unstable; urgency=low
+
+  * Non-maintainer upload
+  * Rebuild against new CXX ABI
+    - new binary pkg is called libfam0 to match what ubuntu has done
+    - Closes: 317700
+
+ -- Mike Furr <mfurr@debian.org>  Sun, 10 Jul 2005 19:46:12 +0000
+
+fam (2.7.0-7) unstable; urgency=low
+
+  * New maintainer (closes: #303194)
+  * Port fam dnotify patch by Alexander Larsson (closes: #234787)
+  * Incorporate read-only filesystem patch by Nedko Arnaudov
+    (closes: #245448)
+  * Remove reference to INSTALL file from README (closes: #255699)
+  * Fix typo in package description (closes: #299974)
+  * Downgrade portmap dependency to Recommends (closes: #289625)
+  * Fix config file name in manual pages (closes: #269899, #280429)
+  * Make cdbs dependency versioned for DEB_UPDATE_RCD_PARAMS
+  * Add upstream version watch file
+
+ -- Chuan-kai Lin <cklin@debian.org>  Thu,  5 May 2005 23:30:19 -0700
+
+fam (2.7.0-6) unstable; urgency=high
+
+  * debian/control:
+    Set Priority to optional to avoid override disparity.
+  * debian/rules:
+    Add "defaults 21" to update-rc.d parameters causing famd to
+    be startet after inetd (closes: Bug#277528).
+    urgency=high because this is a RC bug.
+  * debian/NEWS:
+    Tell users about this change. Includes instructions for users
+    having fam already installed and should make modifications to
+    their init manually.
+
+ -- Joerg Wendland <joergland@debian.org>  Sat,  6 Nov 2004 19:51:32 +0100
+
+fam (2.7.0-5) unstable; urgency=low
+
+  * debian/fam.preinst:
+    Add a call to start-stop-daemon in upgrade phase to forcibly
+    stop all still running instances of famd.  This is because
+    some old versions (at least 2.6.0-6) missed this call in their
+    prerm.  This could be the cause of (now closed) bug #225636.
+
+ -- Joerg Wendland <joergland@debian.org>  Tue, 10 Feb 2004 12:54:32 +0100
+
+fam (2.7.0-4) unstable; urgency=low
+
+  * Update libtool upon build. (closes: Bug#230877)
+    (cdbs vars to debian/rules, Build-Depends on libtool >= 1.5-2
+     and on automake1.6 and autoconf for this)
+  * debian/patches/04_autotools.patch:
+    Remove because we are running autoconf and automake anyway.
+
+ -- Joerg Wendland <joergland@debian.org>  Tue,  3 Feb 2004 14:04:56 +0100
+
+fam (2.7.0-3) unstable; urgency=low
+
+  * Now really add the forgotten old changelog entries.
+  * Upload to unstable.
+
+ -- Joerg Wendland <joergland@debian.org>  Fri, 30 Jan 2004 18:09:36 +0100
+
+fam (2.7.0-2) experimental; urgency=low
+
+  * The last upload contained somewhat out-of-date patches and
+    not the complete changelog of its antecedent versions.
+  * 01_dnotify.patch:
+    Use newer version of this patch.
+  * 03_autotools.patch -> 04_autotools.patch
+  * 03_getgrouplist.patch:
+    Use getgrouplist(3) when retrieving a user's groups.
+  * Readd LARGEFILE defs.
+  * Readd test.c++ to libfam-dev examples.
+  * Heading of fam.conf.5 was still "famd.conf".
+
+ -- Joerg Wendland <joergland@debian.org>  Fri, 30 Jan 2004 17:53:22 +0100
+
+fam (2.7.0-1) experimental; urgency=low
+
+  * New upstream release 
+    (closes: Bug#224738):
+    - should fix problems with unmounting filesystems with
+      monitored files 
+      (closes: Bug#225636)
+  * Change build to cdbs, tarball-build and simple-patchsys
+    for easier maintenance:
+    - adapt debian/control:Build-Depends to that
+    - remove fam.postinst, fam.prerm, fam.postrm
+      (now handled by debhelper)
+  * Move debian/*.files to debian/*.install.
+  * Compile libraries with -fPIC. 
+    (closes: Bug#223799)
+  * /etc/fam.conf:
+    local_only = true
+    (closes: Bug#222851)
+  * patches in debian/patches:
+    - 00_maintainer-mode.patch: 
+      add AM_MAINTAINER_MODE to configure.ac and aclocal.m4
+    - 01_dnotify.patch: 
+      add the dnotify monitor
+    - 02_cleanup.patch:
+      still the old cleanup code stolen from fedora
+    - 03_autotools.patch:
+      add the generated autotools code (Makefile.in, configure) so that a run
+      of autoconf and automake is not needed when building this package
+  * Remove Dependency on debconf.
+
+ -- Joerg Wendland <joergland@debian.org>  Fri, 30 Jan 2004 15:24:34 +0100
+
+fam (2.6.10-6) unstable; urgency=low
+
+  * debian/patches/01_dnotify.dpatch:
+    Update DNotify patch from fedoras fam-2.6.8-12. This has some
+    performance improvements over the old one. See
+    https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=99364
+    for more info on this. Additionally I patched this patch so
+    that fam falls back to polling if dnotify is not supported.
+  * debian/patches/03_gcc32.dpatch:
+    Add some more fixes for compilation with GCC3. These are only
+    to get rid of the warnings concerning deprecated headers.
+  * debian/patches/05_largefiles.dpatch:
+    Fix largefile support. (closes: Bug#191084)
+  * debian/patches/06_getgrouplist.dpatch:
+    Another patch from fedora, to use getgrouplist(3) in Cred.c++
+    instead of iterating over groups on our own. This should
+    result in increased performance, especially when not using
+    /etc/groups (like in NIS or LDAP environments).
+  * Remove inetd service and always start fam as daemon. Therefore,
+    there are no more debconf questions, templates and config are
+    thus removed. (closes: Bug#220471, Bug#216833)
+  * debian/patches/*:
+    Fix patch descriptions.
+  * debian/README.Debian:
+    Compile patch descriptions into README.Debian, for those curious
+    users.
+  * debian/fam.init:
+    Fix restart, fam options should be given to fam when fam is started,
+    not when it is stopped.
+
+ -- Joerg Wendland <joergland@debian.org>  Mon, 17 Nov 2003 11:49:06 +0100
+
+fam (2.6.10-5) unstable; urgency=high
+
+  * debian/control:
+    - set priority of fam to optional (closes: Bug#219004)
+  * Urgency=high because of this and there being no changes to
+    the actual software.
+  * Add danish debconf translation. Thanks to Morten Brix Pedersen.
+    (closes: Bug#217290)
+
+ -- Joerg Wendland <joergland@debian.org>  Fri,  7 Nov 2003 18:37:13 +0100
+
+fam (2.6.10-4) unstable; urgency=high
+
+  * The "next time I will buy myself a powerpc" release.
+  * When disabling the maintainer-mode, config.h would only be
+    created from config.h.in. A missing "USE_DNOTIFY" in that
+    caused the compiler to choose IMon (and therefore the Pollster)
+    to be used in the fam. This should now really close this bug.
+
+ -- Joerg Wendland <joergland@debian.org>  Mon, 13 Oct 2003 23:36:56 +0200
+
+fam (2.6.10-3) unstable; urgency=high
+
+  * Next try to fix the build-bug (see below), urgency
+    set to high for this reason. Thanks to Graham Wilson for
+    his efforts to debug this. Still, please reopen this report
+    if this upload still does not fix the issues.
+    (closes: Bug#213474)
+  * configure.in:
+    include AM_MAINTAINER_MODE
+  * debian/rules:
+    - ./configure --disable-maintainer-mode
+    - use newer config.{sub,guess} and ltmain.sh to build
+      shared libraries that are named *.so (shouldn't that be
+      the default?).
+  * debian/control:
+    - bump Standards-Version to 3.6.1.0, no changes required.
+    - libfam-dev is in section libdevel
+
+ -- Joerg Wendland <joergland@debian.org>  Mon, 13 Oct 2003 15:02:03 +0200
+
+fam (2.6.10-2) unstable; urgency=high
+
+  * Acknowledge NMU by bubulle, thanks a lot.
+    (closes: Bug#198644, Bug#199084)
+  * Add japanese debconf translation, thanks to Kenshi Muto.
+    (closes: Bug#214046)
+  * Urgency is set to high because simply rebuilding this package
+    should close a grave functionality bug on PPC and no modifications
+    were made to the software itself. Feel free to reopen the relevant
+    bug reports if the bug is still not fixed.
+    (closes: Bug#213474)
+
+ -- Joerg Wendland <joergland@debian.org>  Tue,  7 Oct 2003 00:02:29 +0200
+
+fam (2.6.10-1.1) unstable; urgency=low
+
+  * NMU
+  * Switch to po-debconf for debconf templates. Closes: #198644
+  * French translation of debconf templates. Same bug nr.
+  * Corrected typo in README.Debian. Closes: #199084
+
+ -- Christian Perrier <bubulle@debian.org>  Mon, 22 Sep 2003 18:50:09 +0200
+
+fam (2.6.10-1) unstable; urgency=low
+
+  * New upstream release.
+  * After a long period of testing, I am finally sure that libfam0c102
+    definitely can provide libfam0 without introducing problems. libfam
+    is apparently completely "extern C".
+    (closes: Bug#176849, Bug#177970, Bug#181100, Bug#181104)
+  * fam.init: test for program name and program number in inetd.conf
+    avoid problems with older installations.
+    (closes: Bug#182501)
+  * Use --oknodo in stop actions in init-script.
+    (closes: Bug#185229)
+  * Use dpatch instead of own patch script.
+  * Don't patch configure.in but configure instead to not build-depend
+    on autoconf, automake and libtool. (The same for a couple of
+    Makefile.in's)
+  * Provide updated autotools in orig.tar.gz.
+  * Standards-Version 3.5.9.
+  * Remove debian/patches/01gcc3, it is now included upstream.
+  * Include patch by Robert Millan <rmh@khazad.dyndns.org> to build
+    on GNU/Hurd.
+    (closes: Bug#187701)
+
+ -- Joerg Wendland <joergland@debian.org>  Thu, 15 May 2003 08:30:06 +0200
+
+fam (2.6.9-4) unstable; urgency=low
+
+  * Link the daemon against -lrt and -lpthread for DNotify
+    to use the right implementation of SIGRTMIN. Thanks to
+    Wil Evers for pointing this out. (closes: Bug#157031)
+  * Fix fam(1m) to point to the correct path of the daemon.
+    (closes: Bug#175488)
+  * Build with new gcc-defaults to become g++-3.2-blessed.
+  * Rename libfam0 to libfam0c102.
+  
+ -- Joerg Wendland <joergland@debian.org>  Wed,  8 Jan 2003 14:36:55 +0100
+
+fam (2.6.9-3) unstable; urgency=low
+
+  * fix preinst so that now all calls to update-inetd are being
+    made conditionally (hopefully) ;-/ (closes: Bug#173561)
+
+ -- Joerg Wendland <joergland@debian.org>  Wed, 18 Dec 2002 21:20:11 +0100
+
+fam (2.6.9-2) unstable; urgency=low
+
+  * debian/fam.postrm:
+    call update-inetd only if it exists (closes: Bug#167906)
+  * debian/fam.templates:
+    describe FAM's purposes so that debconf's question about
+    FAM's launch mode is less confusing and downgrade this
+    question's priority to 'low' because starting FAM from
+    inetd is _the_ and a good default. Document the configurability
+    in README.Debian. Thanks to ejad for pointing this out.
+    (closes: Bug#168474)
+  * debian/control:
+    - remove libwrap from Build-Depends for now
+    - bump Standards-Version to 3.5.8
+    - add versioned dependency on debconf
+
+ -- Joerg Wendland <joergland@debian.org>  Fri, 13 Dec 2002 00:04:32 +0100
+
+fam (2.6.9-1) unstable; urgency=low
+
+  * New upstream release
+  * Bump Standards-Version to 3.5.7.1
+  * debian/patches/00dnotify:
+    add some debugging output
+  * debian/patches/02daemonize:
+    remove, since upstream now uses daemon(3) on Linux
+  * debian/patches/03gcc32:
+    some fixes for compilation with gcc/g++ 3.2
+  * debian/patches/04docs:
+    replace IMon with DNotify in manpage and fix "see also" and package
+    description (closes: Bug#157823)
+  * added init script to allow FAM to run as daemon and choose between
+    inetd or standalone via debconf
+  * check in config and postinst whether update-inetd is available
+    and only use it if it is available (closes: Bug#167906)
+  * replace Build-Dep automake with automake1.4
+  * use debhelper >> 4.1
+  
+ -- Joerg Wendland <joergland@debian.org>  Tue,  5 Nov 2002 21:56:39 +0100
+
+fam (2.6.8-3) unstable; urgency=low
+
+  * Add Build-Dep: libtool to let aclocal work.
+
+ -- Joerg Wendland <joergland@debian.org>  Fri, 19 Jul 2002 01:53:13 +0200
+
+fam (2.6.8-2) unstable; urgency=low
+
+  * Add Build-Dep: automake so patches to Makefile.am work
+
+ -- Joerg Wendland <joergland@debian.org>  Fri, 19 Jul 2002 01:07:41 +0200
+
+fam (2.6.8-1) unstable; urgency=low
+
+  * New upstream release.
+    (closes: Bug#151972)
+  * Bumped Standards-Version to 3.5.6.1.
+  * patches/00dnotify:
+    new dnotify patch from Alex Larsson
+  * patches/01gcc31:
+    build-patch for gcc 3.1. Stolen from Redhat's fam package.
+  * patches/02daemonize:
+    emulate IRIX' daemonize() to let famd run as daemon.
+    (closes: Bug#126953)
+  * patches/03cleanup:
+    better cleanup for local clients. Stolen from Redhat's fam package.
+  * Reverted inetd.conf entry to use RPC name again as it is included
+    in netbase now.
+  * Removed gcc3-build patch. It is now included in upstream.
+  * use polling when compiled with dnotify patch and dnotify is
+    not available (on 2.2 kernels). (closes: Bug#148853)
+  * Recommend fam for libfam0 since using libfam without fam does
+    not always make sense.
+
+ -- Joerg Wendland <joergland@debian.org>  Thu, 18 Jul 2002 22:00:48 +0200
+
+fam (2.6.6.1-4) unstable; urgency=low
+
+  * Fixed call of debian/patch. (closes: Bug#125801)
+
+ -- Joerg Wendland <joergland@debian.org>  Wed, 19 Dec 2001 18:17:17 +0100
+
+fam (2.6.6.1-3) unstable; urgency=low
+
+  * Added portmap to dependencies of fam. (closes: Bug#124057)
+  * Added some patches from Redhat's RPM fixing a race and a logging error.
+  * Fixed sources to compile with gcc3 (closes: Bug#124237)
+  * Removed creation of rpc-program entry in postinst (see below).
+  * Changed inetd.conf entry to use program number instead of RPC name since
+    we may not edit /etc/rpc due to policy (closes self-discovered Bug).
+
+ -- Joerg Wendland <joergland@debian.org>  Mon, 17 Dec 2001 22:30:36 +0100
+
+fam (2.6.6.1-2) unstable; urgency=low
+
+  * Removed unnecessary build-depend on libstdc++ (closes: Bug#123648)
+  * Added creation of 'sgi_fam' rpc-program to postinst
+
+ -- Joerg Wendland <joergland@debian.org>  Wed, 12 Dec 2001 21:23:36 +0100
+
+fam (2.6.6.1-1) unstable; urgency=low
+
+  * The "not being blind does not mean to be actually able to see" upload.
+  * Reworked the completely fucked up package.
+  * Added dnotify patch from http://people.redhat.com/alexl/files/fam_dnotify.patch.
+  * Fixed fam.postinst to correctly update inetd.conf (closes: Bug#123190)
+  * Fixed autoconf/automake/libtool scripts and files (closes: Bug#123368)
+  * Added link libfam.so -> libfam.so.0 in libfam-dev (closes: Bug#123265)
+  * Repackaged orig.tar.gz using make dist to get around with automake/libtool
+    symlinks in the tarball. Added the .1 to the upstream version to get it
+    into the archives.
+  * Added fam test program as example to libfam-dev.
+
+ -- Joerg Wendland <joergland@debian.org>  Tue, 11 Dec 2001 13:19:07 +0100
+
+fam (2.6.6-1) unstable; urgency=low
+
+  * Initial Release. (Closes: #95635)
+
+ -- Joerg Wendland <joergland@debian.org>  Tue,  4 Dec 2001 10:47:45 +0100

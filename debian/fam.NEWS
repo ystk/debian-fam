@@ -1,0 +1,16 @@
+fam (2.7.0-6) unstable; urgency=high
+
+  Versions less than 2.7.0-6 of fam installed their initscripts with
+  a priority of 20 (eg. /etc/rc2.d/S20fam).  That caused trouble since
+  the automatic allocation of port numbers for the fam daemon could
+  occupy a port that is needed by other daemons (see Bug #277528
+  at http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=277528).  If you
+  installed fam for the first time this will be no issue for you to
+  think of.  If you upgraded fam from an earlier version you should
+  change the symlinks in /etc/rc*.d/ manually, for example by using
+  the following commands (as root):
+
+  update-rc.d -f fam remove
+  update-rc.d fam defaults 21
+
+ -- Joerg Wendland <joergland@debian.org>  Sat,  6 Nov 2004 19:51:32 +0100

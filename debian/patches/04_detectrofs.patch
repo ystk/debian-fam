@@ -1,0 +1,253 @@
+diff -r 4e12baece02e -r 3be87d55e7f3 conf/fam.conf
+--- a/conf/fam.conf	Wed Apr 12 13:49:51 2006 -0700
++++ b/conf/fam.conf	Wed Apr 12 13:50:14 2006 -0700
+@@ -51,3 +51,8 @@
+ #
+ #nfs_polling_interval = 6
+ 
++#
++# detect_readonly_filesystems enables automatic detection of read-only
++# filesystems. Such filesystems are assumed to never change.
++#
++#detect_readonly_filesystems = false
+diff -r 4e12baece02e -r 3be87d55e7f3 man/famd.8
+--- a/man/famd.8	Wed Apr 12 13:49:51 2006 -0700
++++ b/man/famd.8	Wed Apr 12 13:50:14 2006 -0700
+@@ -47,6 +47,9 @@
+ \fB\-L\fR
+ Only accept connections from local clients.
+ .TP
++\fB\-r\fR
++Detect read-only filesystems.
++.TP
+ \fB\-p\fR \fIprog\fR.\fIvers\fR
+ Register with the portmapper using the specifed RPC program
+ and version numbers.
+diff -r 4e12baece02e -r 3be87d55e7f3 man/famd.conf.5
+--- a/man/famd.conf.5	Wed Apr 12 13:49:51 2006 -0700
++++ b/man/famd.conf.5	Wed Apr 12 13:50:14 2006 -0700
+@@ -48,5 +48,11 @@
+ service remote requests without attempting to perform the verification.  If
+ the \fBlocal_only\fR configuration option or \fB-L\fR command line option is
+ used, \fBxtab_verification\fR has no effect.
++.TP
++\fBdetect_readonly_filesystems\fR
++If set to \fItrue\fR, \fBfamd\fR will try to detect read-only filesystems.
++Such filesystems are assumed to never change. This is \fIfalse\fR by default.
++Setting this option to \fBtrue\fR is the same as using the \fB\-r\fR command
++line option.
+ .SH "SEE ALSO"
+ 
+diff -r 4e12baece02e -r 3be87d55e7f3 src/ClientInterest.h
+--- a/src/ClientInterest.h	Wed Apr 12 13:49:51 2006 -0700
++++ b/src/ClientInterest.h	Wed Apr 12 13:50:14 2006 -0700
+@@ -71,6 +71,8 @@
+     ClientInterest(const char *name, Client *, Request, const Cred&, Type);
+     void post_event(const Event&, const char * = NULL);
+ 
++    virtual FileSystem * get_filesystem()  { return myfilesystem; }
++
+ private:
+ 
+     enum { ACTIVE_STATE = 1 << 0 };
+diff -r 4e12baece02e -r 3be87d55e7f3 src/FileSystem.c++
+--- a/src/FileSystem.c++	Wed Apr 12 13:49:51 2006 -0700
++++ b/src/FileSystem.c++	Wed Apr 12 13:50:14 2006 -0700
+@@ -29,7 +29,8 @@
+ 
+ FileSystem::FileSystem(const mntent& mnt)
+     : mydir   (strcpy(new char[strlen(mnt.mnt_dir   ) + 1], mnt.mnt_dir   )),
+-      myfsname(strcpy(new char[strlen(mnt.mnt_fsname) + 1], mnt.mnt_fsname))
++      myfsname(strcpy(new char[strlen(mnt.mnt_fsname) + 1], mnt.mnt_fsname)),
++      myreadonly(false)
+ { }
+ 
+ FileSystem::~FileSystem()
+@@ -69,3 +70,21 @@
+     hl_cancel(request);
+     myinterests.remove(cip);
+ }
++
++bool
++FileSystem::is_readonly() const
++{
++    return myreadonly;
++}
++
++void
++FileSystem::set_readonly()
++{
++    myreadonly = true;
++}
++
++void
++FileSystem::set_readwrite()
++{
++    myreadonly = false;
++}
+diff -r 4e12baece02e -r 3be87d55e7f3 src/FileSystem.h
+--- a/src/FileSystem.h	Wed Apr 12 13:49:51 2006 -0700
++++ b/src/FileSystem.h	Wed Apr 12 13:50:14 2006 -0700
+@@ -103,6 +103,9 @@
+     virtual bool dir_entries_scanned() const = 0;
+     void relocate_interests();
+     virtual int get_attr_cache_timeout() const = 0;
++    bool is_readonly() const;
++    void set_readonly();
++    void set_readwrite();
+ 
+     //  High level monitoring interface
+ 
+@@ -126,6 +129,7 @@
+     char *mydir;
+     char *myfsname;
+     Interests myinterests;
++    bool myreadonly;
+ 
+     virtual Request hl_monitor(ClientInterest *, ClientInterest::Type) = 0;
+     virtual void    hl_cancel(Request) = 0;
+diff -r 4e12baece02e -r 3be87d55e7f3 src/FileSystemTable.c++
+--- a/src/FileSystemTable.c++	Wed Apr 12 13:49:51 2006 -0700
++++ b/src/FileSystemTable.c++	Wed Apr 12 13:50:14 2006 -0700
+@@ -56,6 +56,8 @@
+ InternalClient		   *FileSystemTable::mtab_watcher;
+ FileSystem		   *FileSystemTable::root;
+ 
++extern bool g_detect_readonly_fs;
++
+ #ifdef HAPPY_PURIFY
+ 
+ //////////////////////////////////////////////////////////////////////////////
+@@ -168,7 +170,14 @@
+ 		assert(parent);
+ 		mount_parents.insert(parent->dir(), parent);
+ 	    }
+-	}
++
++            if (g_detect_readonly_fs && hasmntopt(mp, MNTOPT_RO))
++            {
++		Log::debug("mtab: new local \"%s\" on \"%s\" is read-only",
++			   mp->mnt_fsname, mp->mnt_dir);
++                fs->set_readonly();
++            }
++        }
+ 	if (!strcmp(mp->mnt_dir, "/"))
+ 	    root = fs;
+     }
+diff -r 4e12baece02e -r 3be87d55e7f3 src/Interest.c++
+--- a/src/Interest.c++	Wed Apr 12 13:49:51 2006 -0700
++++ b/src/Interest.c++	Wed Apr 12 13:50:14 2006 -0700
+@@ -73,7 +73,12 @@
+     memset(&old_stat, 0, sizeof(old_stat));
+     
+     Monitor::Status s = Monitor::BAD;
+-    s = monitor->express(name, &old_stat);
++
++    if (!fs->is_readonly())
++    {
++        s = monitor->express(name, &old_stat);
++    }
++
+     if (s != Monitor::OK)
+     {   int rc = lstat(name, &old_stat);
+ 	if (rc < 0)
+@@ -158,7 +163,13 @@
+ 
+         // Express interest.
+         IMon::Status s = IMon::BAD;
+-	s = monitor->express(name(), NULL);
++
++        FileSystem *fs = get_filesystem();
++        if (!fs || !fs->is_readonly())
++        {
++            s = monitor->express(name(), NULL);
++        }
++
+         if (s != IMon::OK) {
+             return true;
+         }
+diff -r 4e12baece02e -r 3be87d55e7f3 src/Interest.h
+--- a/src/Interest.h	Wed Apr 12 13:49:51 2006 -0700
++++ b/src/Interest.h	Wed Apr 12 13:50:14 2006 -0700
+@@ -89,6 +89,7 @@
+     const in_addr& host() const         { return myhost; }
+     void verify_exported_to_host();
+     bool exported_to_host() const       { return mypath_exported_to_host; }
++    virtual FileSystem * get_filesystem()   { return NULL; }
+ 
+ private:
+ 
+diff -r 4e12baece02e -r 3be87d55e7f3 src/LocalFileSystem.c++
+--- a/src/LocalFileSystem.c++	Wed Apr 12 13:49:51 2006 -0700
++++ b/src/LocalFileSystem.c++	Wed Apr 12 13:50:14 2006 -0700
+@@ -78,9 +78,8 @@
+ void
+ LocalFileSystem::ll_monitor(Interest *ip, bool imonitored)
+ {
+-    if (!imonitored)
++    if (!imonitored && !is_readonly())
+     {
+-	Log::debug("will poll %s", ip->name());
+ 	Pollster::watch(ip);
+     }
+ }
+@@ -95,5 +94,8 @@
+ void
+ LocalFileSystem::ll_notify_deleted(Interest *ip)
+ {
+-    Pollster::watch(ip);
++    if (!is_readonly())
++    {
++        Pollster::watch(ip);
++    }
+ }
+diff -r 4e12baece02e -r 3be87d55e7f3 src/main.c++
+--- a/src/main.c++	Wed Apr 12 13:49:51 2006 -0700
++++ b/src/main.c++	Wed Apr 12 13:50:14 2006 -0700
+@@ -65,6 +65,7 @@
+ #define CFG_UNTRUSTED_USER "untrusted_user"
+ #define CFG_IDLE_TIMEOUT "idle_timeout"
+ #define CFG_NFS_POLLING_INTERVAL "nfs_polling_interval"
++#define CFG_DETECT_READONLY_FILESYSTEMS "detect_readonly_filesystems"
+ static void parse_config(config_opts &opts);
+ static void parse_config_line(config_opts &opts, int line,
+                               const char *k, const char *v);
+@@ -78,6 +79,8 @@
+ 	    tail = p;
+     return tail;
+ }
++
++bool g_detect_readonly_fs = false;
+ 
+ void usage()
+ {   fprintf(stderr,
+@@ -96,6 +99,7 @@
+     fprintf(stderr, "\t-c config_file\tpath to alternate configuration file\n");
+     fprintf(stderr, "\t\t\t  (default is %s)\n", FAM_CONF);
+     fprintf(stderr, "\t-C\t\tinsecure compatibility\n");
++    fprintf(stderr, "\t-r\t\tdetect read-only filesystems\n");
+     fprintf(stderr, "\n");
+     exit(1);
+ }
+@@ -181,6 +185,10 @@
+ 
+ 	case 'l':
+ 	    opts.disable_pollster = true;
++	    break;
++
++	case 'r':
++	    g_detect_readonly_fs = true;
+ 	    break;
+ 
+ 	case 'p':
+@@ -409,6 +417,10 @@
+ //                       opts.config_file, lineno, key);
+ //        }
+     }
++    else if(!strcmp(key, CFG_DETECT_READONLY_FILESYSTEMS))
++    {
++        g_detect_readonly_fs = is_true(val);
++    }
+     else if(!strcmp(key, "disable_audit"))
+     {
+         opts.disable_audit = is_true(val);

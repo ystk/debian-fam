@@ -1,0 +1,4 @@
+usr/sbin/famd
+etc/fam.conf
+usr/share/man/man8/famd.8
+usr/share/man/man5/fam.conf.5

@@ -1,0 +1,71 @@
+diff -r 88d07b42269d include/fam.h
+--- a/include/fam.h	Wed Apr 12 13:50:44 2006 -0700
++++ b/include/fam.h	Wed Apr 12 14:30:43 2006 -0700
+@@ -41,7 +41,7 @@
+ *****************************************************************************/
+ 
+ /* For NAME_MAX - maximum # of chars in a filename */
+-#include "limits.h"
++#include <limits.h>
+ 
+ 
+ 
+@@ -160,12 +160,12 @@
+ *  FAMOpen, FAMClose
+ *
+ *  The first step that an application has to do is open a connection to
+-*  fam.  This is done through the FAMOpen.  FAMOpen returns a FAMConnection
+-*  data structure which is passed to all fam procedures.  FAMClose closes
+-*  a fam connection.  
+-*
+-*  On error, FAMOpen will return NULL and FAMClose will return -1 (and
+-*  FAMErrno will be set to the value of the error).  
++*  fam.  This is done through the FAMOpen.  The argument to FAMOpen is a
++*  pointer to a FAMConnection data structure, which FAMOpen will fill
++*  out so that the programmer can pass it to all fam procedures.
++*  FAMClose closes a fam connection.
++*
++*  On error, FAMOpen will return -1.
+ *****************************************************************************/
+ 
+ extern int FAMOpen(FAMConnection* fc);
+@@ -189,8 +189,7 @@
+ *  (as well as the directory file itself) and FAMMonitorFile monitors
+ *  only what happens to a particular file.
+ *
+-*  On error FAMMonitorDirectory/File will return NULL (and FAMErrno will
+-*  be set to the value of the error).  
++*  On error FAMMonitorDirectory/File will return NULL.
+ *****************************************************************************/
+ 
+ extern int FAMMonitorDirectory(FAMConnection *fc,
+@@ -229,8 +228,7 @@
+ *  The FAMRequest Structure is returned from the FAMMonitorFile/Directory
+ *  routines.
+ *
+-*  On error, FAMResume/SuspendMonitor will return -1 (and the global
+-*  FAMErrno will be set to the value of the error).
++*  On error, FAMResume/SuspendMonitor will return -1.
+ *****************************************************************************/
+ 
+ int FAMSuspendMonitor(FAMConnection *fc, const FAMRequest *fr);
+@@ -249,8 +247,7 @@
+ *  this directory anymore. Once again, the FAMRequest structure is
+ *  returned from the FAMMonitorFile/Directory routines.
+ *
+-*  On error, FAMCancelMonitor will return -1 (and the global
+-*  FAMErrno will be set to the value of the error).  This routine will free
++*  On error, FAMCancelMonitor will return -1.  This routine will free
+ *  the FAMRequest structure that is passed in.
+ *****************************************************************************/
+ 
+@@ -285,8 +282,7 @@
+ *  FAMNextEvent reads any information that is on the fam socket,
+ *  and returns it to the application (in the form of a FAMEvent).
+ *
+-*  On error, FAMNextEvent and FAMPendingEvent will return -1 (and the global
+-*  FAMErrno will be set to the value of the error).
++*  On error, FAMNextEvent and FAMPendingEvent will return -1.
+ *****************************************************************************/
+ 
+ int FAMNextEvent(FAMConnection *fc, FAMEvent *fe);

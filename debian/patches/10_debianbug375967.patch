@@ -1,0 +1,38 @@
+--- a/src/NetConnection.c++	2003-01-18 15:18:12.000000000 +0100
++++ b/src/NetConnection.c++	2006-12-03 16:18:42.000000000 +0100
+@@ -208,6 +208,16 @@
+     if (fd < 0)
+ 	return;				// if closed, do nothing.
+ 
++    /*
++     * According to bug http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=375967
++     * this method is called with format=NULL from ClientConnection::send_event .
++     * But looking at the code in ClientConnection, format cannot be NULL.
++     * This assert verify this fact and will eventually show a compiler bug.
++     *
++     * Giuseppe Sacco, 20061203
++     */
++    assert(format != NULL);
++
+     va_list args;
+     va_start(args, format);
+ 
+@@ -217,7 +227,18 @@
+         msg->msg + 4, MAXMSGSIZE + 1, format, args) + 1;
+     va_end(args);
+ 
++    /*
++     * Changed from 
+     if (len <= 0 || len == MAXMSGSIZE+1) {
++     * to
++    if (len <= 0 || len > MAXMSGSIZE) {
++     * because the vsnprint return the size it would have required
++     * to store the complete string; this size may be greather than
++     * just MAXMSGSIZE+1
++     *
++     * Giuseppe Sacco, 20061203
++     */
++    if (len <= 0 || len > MAXMSGSIZE) {
+         Log::error("tried to write a message that was too big");
+         assert(0);
+         // protocol botch.  Don't send the message.

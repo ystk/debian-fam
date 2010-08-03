@@ -1,0 +1,11 @@
+diff -urN fam-2.7.0.orig/src/Interest.h fam-2.7.0/src/Interest.h
+--- fam-2.7.0.orig/src/Interest.h	2009-05-02 09:11:57.000000000 -0700
++++ fam-2.7.0/src/Interest.h	2009-05-02 09:12:29.000000000 -0700
+@@ -27,6 +27,7 @@
+ #include <sys/types.h>
+ #include <sys/time.h>
+ #include <netinet/in.h>  //  for in_addr
++#include <cstdlib>
+ 
+ #include "Boolean.h"
+ 

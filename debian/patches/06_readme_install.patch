@@ -1,0 +1,10 @@
+diff -r bbe1b0034cd3 -r 88d07b42269d README
+--- a/README	Wed Apr 12 13:50:33 2006 -0700
++++ b/README	Wed Apr 12 13:50:44 2006 -0700
+@@ -1,6 +1,4 @@
+ This is FAM version 2.7.0.
+-
+-For installation instructions, see the INSTALL file.
+ 
+ For the terms under which the FAM code is licensed, see the
+ COPYING file.  (To summarize: fam is GPL, libfam is LGPL.)

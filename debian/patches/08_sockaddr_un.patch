@@ -1,0 +1,56 @@
+diff -r 311775068c30 -r 91c270e9e228 config.h.in
+--- a/config.h.in	Wed Apr 12 13:50:51 2006 -0700
++++ b/config.h.in	Wed Apr 12 13:50:58 2006 -0700
+@@ -75,6 +75,9 @@
+ 
+ /* Define to 1 if `sa_len' is member of `struct sockaddr'. */
+ #undef HAVE_STRUCT_SOCKADDR_SA_LEN
++
++/* Define to 1 if `sun_len' is member of `struct sockaddr_un'. */
++#undef HAVE_STRUCT_SOCKADDR_UN_SUN_LEN
+ 
+ /* Define to 1 if you have the <syslog.h> header file. */
+ #undef HAVE_SYSLOG_H
+diff -r 311775068c30 -r 91c270e9e228 configure.ac
+--- a/configure.ac	Wed Apr 12 13:50:51 2006 -0700
++++ b/configure.ac	Wed Apr 12 13:50:58 2006 -0700
+@@ -72,7 +72,8 @@
+ AC_TYPE_PID_T
+ AC_TYPE_SIZE_T
+ AC_HEADER_TIME
+-AC_CHECK_MEMBERS(struct sockaddr.sa_len, struct sockaddr_un.sun_len)
++AC_CHECK_MEMBERS([struct sockaddr.sa_len],,, [#include <sys/socket.h>])
++AC_CHECK_MEMBERS([struct sockaddr_un.sun_len],,, [#include <sys/un.h>])
+ 
+ # Checks for library functions.
+ AC_FUNC_ERROR_AT_LINE
+diff -r 311775068c30 -r 91c270e9e228 src/Listener.c++
+--- a/src/Listener.c++	Wed Apr 12 13:50:51 2006 -0700
++++ b/src/Listener.c++	Wed Apr 12 13:50:58 2006 -0700
+@@ -209,7 +209,7 @@
+ #endif
+ 
+     char *tmpfile = tempnam("/tmp", ".fam");
+-#ifdef HAVE_SOCKADDR_SUN_LEN
++#ifdef HAVE_STRUCT_SOCKADDR_UN_SUN_LEN
+     sockaddr_un sun = { sizeof(sockaddr_un), AF_UNIX, "" };
+ #else
+     sockaddr_un sun = { AF_UNIX, "" };
+@@ -283,7 +283,7 @@
+ 
+     // Get the new socket.
+ 
+-#ifdef HAVE_SOCKADDR_SUN_LEN
++#ifdef HAVE_STRUCT_SOCKADDR_UN_SUN_LEN
+     struct sockaddr_un sun = { sizeof(sockaddr_un), AF_UNIX, "" };
+ #else
+     struct sockaddr_un sun = { AF_UNIX, "" };
+@@ -357,7 +357,7 @@
+ void
+ Listener::dirty_ugly_hack()
+ {
+-#ifdef HAVE_SOCKADDR_SUN_LEN
++#ifdef HAVE_STRUCT_SOCKADDR_UN_SUN_LEN
+     static sockaddr_un sun = { sizeof (sockaddr_un), AF_UNIX, "/tmp/.fam_socket" };
+ #else
+     static sockaddr_un sun = { AF_UNIX, "/tmp/.fam_socket" };

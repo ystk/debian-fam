@@ -1,0 +1,58 @@
+Source: fam
+Section: admin
+Priority: optional
+Maintainer: Chuan-kai Lin <cklin@debian.org>
+Build-Depends: debhelper (>= 7), cdbs (>= 0.4.0.1), libtool (>= 1.5-2), automake1.10, autoconf
+Standards-Version: 3.9.0.0
+Homepage: http://oss.sgi.com/projects/fam/
+
+Package: fam
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, lsb-base (>= 3.2-13), portmap, update-inetd
+Description: File Alteration Monitor
+ FAM monitors files and directories, notifying interested applications
+ of changes.
+ .
+ This package provides a server that can monitor a given list of files
+ and notify applications through a socket.  If the kernel supports
+ dnotify (kernels >= 2.4.x) FAM is notified directly by the kernel.
+ Otherwise it has to poll the files' status.  FAM can also provide an
+ RPC service for monitoring remote files (such as on a mounted NFS
+ filesystem).
+
+Package: libfam0
+Section: libs
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Replaces: libfam0c102 (<< ${binary:Version})
+Provides: libfam0c102
+Suggests: fam (=${binary:Version})
+Description: Client library to control the FAM daemon
+ FAM monitors files and directories, notifying interested applications
+ of changes.
+ .
+ This package provides a shared library to allow programs to connect to
+ the FAM daemon and ask for files to be monitored.
+
+Package: libfam0c102
+Section: libs
+Architecture: all
+Depends: libfam0 (>= ${binary:Version}), ${misc:Depends}
+Description: Dummy package for libfam0
+ FAM monitors files and directories, notifying interested applications
+ of changes.
+ .
+ This is a dummy package that installs libfam0; see README.Debian for
+ libfam0 for details.  You can safely remove this package once libfam0
+ is installed.
+
+Package: libfam-dev
+Section: libdevel
+Architecture: any
+Depends: libfam0 (= ${binary:Version}), ${misc:Depends}
+Description: Client library to control the FAM daemon - development files
+ FAM monitors files and directories, notifying interested applications
+ of changes.
+ .
+ This package provides header files and static libraries to allow the
+ development of programs that interface FAM for file monitoring.

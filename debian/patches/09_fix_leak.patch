@@ -1,0 +1,16 @@
+diff -Naur fam-2.7.0/src/DNotify.c++ fam-2.7.0-fix-leak/src/DNotify.c++
+--- fam-2.7.0/src/DNotify.c++	2006-08-04 20:20:01.000000000 +1000
++++ fam-2.7.0-fix-leak/src/DNotify.c++	2006-08-04 20:21:31.000000000 +1000
+@@ -69,6 +69,12 @@
+ 	n_dir_watches = 0;
+     }
+ 
++    ~FileWatch(void) {
++        if (dir_watch) {
++            free(dir_watch);
++        }
++    }
++
+     void add_dir_watch (DirWatch *w);
+     bool has_dir_watch (DirWatch *w);
+ };
